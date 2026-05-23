@@ -445,7 +445,7 @@ html.light-mode .navbar {
 .exercise-block-collapsible {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .exercise-block--open .exercise-block-collapsible {
   grid-template-rows: 1fr;
@@ -455,7 +455,7 @@ html.light-mode .navbar {
 .exercise-block-chevron {
   flex-shrink: 0;
   color: var(--text-muted);
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
 }
 .exercise-block--open .exercise-block-chevron {
   transform: rotate(180deg);
