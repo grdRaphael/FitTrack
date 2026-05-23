@@ -973,10 +973,10 @@ html.light-mode .ah-tt {
   0%   { top: -140px; opacity: 0; }
   8%   { opacity: 1; }
   38%  { top: 340px;  opacity: 0; }
-  50%  { top: -140px; opacity: 0; }
+  50%  { top: 340px;  opacity: 0; }
   58%  { opacity: 1; }
-  88%  { top: 340px;  opacity: 0; }
-  100% { top: 340px;  opacity: 0; }
+  88%  { top: -140px; opacity: 0; }
+  100% { top: -140px; opacity: 0; }
 }
 
 .pr-glass-outer {
