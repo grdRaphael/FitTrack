@@ -661,6 +661,114 @@ hr.divider {
 .cat-chaine_posterieure { background: var(--cyan); }
 .cat-autre              { background: var(--text-muted); }
 
+/* ── PR Medal Carousel ──────────────────────────────────────────────────── */
+.pr-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 2px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.pr-carousel::-webkit-scrollbar { display: none; }
+
+.pr-carousel-card {
+  flex: 0 0 200px;
+  scroll-snap-align: start;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 16px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.pr-carousel-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.pr-medal-wrap {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.pr-medal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+  animation: medalFloat 3.2s ease-in-out infinite;
+}
+@keyframes medalFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-7px) rotate(1deg); }
+}
+
+.pr-medal-type {
+  font-size: .625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+}
+.pr-medal-name {
+  font-size: .8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pr-medal-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pr-medal-sub {
+  font-size: .6875rem;
+  color: var(--text-secondary);
+}
+.pr-medal-date {
+  font-size: .625rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.pr-carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pr-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border-light);
+  transition: background .2s, transform .2s, width .2s;
+}
+.pr-dot.active {
+  background: var(--accent);
+  transform: scale(1.4);
+}
+
+@media (max-width: 640px) {
+  .pr-carousel-card { flex: 0 0 calc(70vw - 32px); scroll-snap-align: center; }
+  .pr-medal-wrap    { width: 110px; height: 110px; }
+  .pr-medal-value   { font-size: 1.375rem; }
+}
+
 /* ── Bottom Navigation — Liquid Glass flottant ──────────────────────────── */
 .bottom-nav {
   display: none;

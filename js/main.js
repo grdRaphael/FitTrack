@@ -243,6 +243,7 @@ function initAccueil(sessions) {
     currentDays = days;
     const filtered = filterByDays(sessions, days);
     renderStatsCards(filtered);
+    renderPRCarousel(sessions);
     renderAlerts(sessions);
     renderRecentSessions(sessions.slice(0, 5));
     charts = renderDashboardCharts(filtered, charts);
@@ -302,14 +303,87 @@ function renderDashboardCharts(sessions, existingCharts = {}) {
   return {};
 }
 
+function renderPRCarousel(sessions) {
+  const el = document.getElementById('pr-carousel-section');
+  if (!el) return;
+
+  const MEDAL = {
+    charge:  { img: './assets/medal_charge.png',  label: 'Charge max',    color: '#f59e0b' },
+    volume:  { img: './assets/medal_volume.png',  label: 'Volume record', color: '#3b82f6' },
+    premier: { img: './assets/medal_pr.png',      label: 'Premier fois',  color: '#8b5cf6' },
+    streak:  { img: './assets/medal_streak.png',  label: 'Progression',   color: '#10b981' },
+  };
+
+  const prItems = sessions.slice(0, 5).flatMap(s =>
+    detectSessionPRs(s, sessions).map(pr => ({
+      type:     pr.type,
+      exercise: pr.exercise.replace(/\s*\(.*?\)\s*$/, ''),
+      value:    pr.value,
+      sub:      pr.label,
+      date:     s.date,
+    }))
+  ).slice(0, 6);
+
+  const progItems = detectProgressions(sessions).slice(0, 3).map(p => ({
+    type:     'streak',
+    exercise: p.name.replace(/\s*\(.*?\)\s*$/, ''),
+    value:    `+${p.pct}%`,
+    sub:      `${p.from} → ${p.to} kg`,
+    date:     null,
+  }));
+
+  const items = [...prItems, ...progItems];
+
+  if (!items.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-semibold" style="font-size:1rem">Records & Progressions</h3>
+        <p class="text-xs text-muted" style="margin-top:2px">Tes dernières performances</p>
+      </div>
+      <div class="pr-carousel-dots" id="pr-dots">
+        ${items.map((_, i) => `<span class="pr-dot${i === 0 ? ' active' : ''}"></span>`).join('')}
+      </div>
+    </div>
+    <div class="pr-carousel" id="pr-carousel">
+      ${items.map((item, i) => {
+        const medal = MEDAL[item.type] || MEDAL.premier;
+        return `
+          <div class="pr-carousel-card fade-in" style="animation-delay:${i * 0.05}s">
+            <div class="pr-medal-wrap">
+              <img src="${medal.img}" class="pr-medal-img" alt="${medal.label}"
+                   style="animation-delay:${i * 0.4}s">
+            </div>
+            <div class="pr-medal-type" style="color:${medal.color}">${medal.label}</div>
+            <div class="pr-medal-name">${item.exercise}</div>
+            <div class="pr-medal-value" style="color:${medal.color}">${item.value}</div>
+            <div class="pr-medal-sub">${item.sub}</div>
+            ${item.date ? `<div class="pr-medal-date">${formatDate(item.date)}</div>` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  const carousel = el.querySelector('#pr-carousel');
+  const dots     = el.querySelectorAll('.pr-dot');
+  let isScrolling;
+
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(isScrolling);
+    isScrolling = setTimeout(() => {
+      const cardW = carousel.querySelector('.pr-carousel-card')?.offsetWidth || 1;
+      const gap   = 16;
+      const idx   = Math.round(carousel.scrollLeft / (cardW + gap));
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }, 50);
+  });
+}
+
 function renderAlerts(sessions) {
   const progressions = detectProgressions(sessions);
-  const plateaus     = detectPlateaus(sessions);
   const newEx        = detectNewExercises(sessions, 14);
-
-  const prSessions = sessions.slice(0, 3).flatMap(s =>
-    detectSessionPRs(s, sessions).map(pr => ({ ...pr, date: s.date }))
-  ).slice(0, 4);
 
   const alertsEl = document.getElementById('alerts-grid');
   if (!alertsEl) return;
@@ -333,14 +407,11 @@ function renderAlerts(sessions) {
   `;
 
   alertsEl.innerHTML = [
-    makeCard('Records récents', '🏆', 'pr',
-      prSessions.map(p => ({ title: p.exercise.replace(/\s*\(.*?\)\s*$/, ''), sub: `${p.label} — ${p.value}` })),
-      'Aucun PR récent détecté'),
     makeCard('Progressions notables', '📈', 'prog',
-      progressions.slice(0, 4).map(p => ({ title: p.name.replace(/\s*\(.*?\)\s*$/, ''), sub: `+${p.pct}% (${p.from}→${p.to} kg)` })),
+      progressions.slice(0, 5).map(p => ({ title: p.name.replace(/\s*\(.*?\)\s*$/, ''), sub: `+${p.pct}% (${p.from}→${p.to} kg)` })),
       'Pas encore de progression de 15%+'),
     makeCard('Nouveaux exercices (14j)', '✨', 'new',
-      newEx.slice(0, 4).map(e => ({ title: e.name, sub: `${formatCategory(e.category)} — première fois le ${formatDate(e.firstSeen)}` })),
+      newEx.slice(0, 5).map(e => ({ title: e.name, sub: `${formatCategory(e.category)} — première fois le ${formatDate(e.firstSeen)}` })),
       'Aucun nouvel exercice cette quinzaine')
   ].join('');
 }
