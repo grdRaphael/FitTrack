@@ -203,12 +203,20 @@ function renderBottomNav(page) {
   const root    = inPages ? '../' : './';
   const p       = inPages ? './'  : './pages/';
 
+  const SVG = {
+    accueil:    `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`,
+    journal:    `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>`,
+    calendrier: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3h-1V1h-2v2H7V1H5v2H4C2.9 5 2 5.9 2 7v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>`,
+    exercices:  `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>`,
+    importer:   `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`,
+  };
+
   const items = [
-    { id: 'accueil',    icon: '🏠', label: 'Dashboard',  href: root + 'index.html' },
-    { id: 'journal',    icon: '📋', label: 'Journal',    href: p + 'journal.html' },
-    { id: 'calendrier', icon: '📅', label: 'Calendrier', href: p + 'calendrier.html' },
-    { id: 'exercices',  icon: '💪', label: 'Exercices',  href: p + 'exercices.html' },
-    { id: 'importer',   icon: '➕', label: 'Import',     href: p + 'importer.html' },
+    { id: 'accueil',    label: 'Home',      href: root + 'index.html' },
+    { id: 'journal',    label: 'Journal',   href: p + 'journal.html' },
+    { id: 'calendrier', label: 'Calendrier',href: p + 'calendrier.html' },
+    { id: 'exercices',  label: 'Exercices', href: p + 'exercices.html' },
+    { id: 'importer',   label: 'Import',    href: p + 'importer.html' },
   ];
 
   const nav = document.createElement('nav');
@@ -216,7 +224,7 @@ function renderBottomNav(page) {
   nav.setAttribute('aria-label', 'Navigation principale');
   nav.innerHTML = items.map(item =>
     `<a href="${item.href}" class="bottom-nav-item${page === item.id ? ' active' : ''}" aria-label="${item.label}">
-      <span class="bottom-nav-icon">${item.icon}</span>
+      <span class="bottom-nav-icon">${SVG[item.id]}</span>
       <span>${item.label}</span>
     </a>`
   ).join('');
