@@ -517,13 +517,13 @@ html.light-mode .navbar {
 
 /* ── Mobile (≤640px) ────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  /* Bottom nav visible — hide all top-nav links */
+  /* Navbar cachée sur mobile — navigation via bottom nav */
   .bottom-nav { display: flex !important; }
-  .navbar .nav-link { display: none !important; }
+  .navbar     { display: none !important; }
 
-  /* Page layout — leave room for bottom nav */
+  /* Page layout — pas de navbar, safe-area-inset-top pour status bar iOS */
   .page-wrapper {
-    padding-top: calc(var(--nav-height) + 16px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
     padding-left: 14px;
     padding-right: 14px;
     padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px) + 16px);
@@ -550,12 +550,13 @@ html.light-mode .navbar {
   .period-btn    { padding: 7px 10px; }
   .filter-btn    { padding: 7px 12px; }
 
-  /* Bottom-sheet modal (exercices page) */
-  .modal-backdrop { padding: 0; align-items: flex-end; }
+  /* Modal flottante au-dessus de la bottom nav */
+  .modal-backdrop { padding: 0 10px; align-items: flex-end; }
   .modal {
-    border-radius: 18px 18px 0 0;
-    max-height: 90vh;
+    border-radius: 20px;
+    max-height: calc(88vh - 68px - 20px - env(safe-area-inset-bottom, 0px));
     max-width: 100%;
+    margin-bottom: calc(68px + 20px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Set table — slightly tighter */
@@ -766,21 +767,12 @@ hr.divider {
 /* ── Mobile : full Apple Health experience ──────────────────────────────── */
 @media (max-width: 640px) {
 
-  /* Navbar transparent pour laisser le gradient briller */
-  body[data-page="seance"] .navbar {
-    background: transparent !important;
-    border-bottom: none;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    box-shadow: none;
-  }
-
-  /* Hero full-width cassant le padding du page-wrapper */
+  /* Hero full-width — navbar masquée, offset via safe-area-inset-top */
   .seance-hero {
-    margin-top: calc(-1 * (var(--nav-height) + 16px));
+    margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 20px));
     margin-left: -14px;
     margin-right: -14px;
-    padding: calc(var(--nav-height) + 22px) 20px 28px;
+    padding: calc(env(safe-area-inset-top, 0px) + 28px) 20px 28px;
     position: relative;
     overflow: hidden;
     margin-bottom: 24px;
