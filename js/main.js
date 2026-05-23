@@ -792,29 +792,37 @@ function initSeance(sessions) {
   if (headerEl) {
     const typeColor = getTypeColor(session.type);
     headerEl.innerHTML = `
-      <div class="flex items-center gap-3 mb-3">
-        <a href="../index.html" class="btn btn-ghost" style="font-size:.8125rem">← Retour</a>
-        <span class="badge" style="background:${typeColor}20;color:${typeColor}">${TYPE_LABELS[session.type] || session.type}</span>
-        ${prs.length ? `<span class="pr-badge">🏆 ${prs.length} PR${prs.length > 1 ? 's' : ''}</span>` : ''}
-      </div>
-      <h1 class="page-title" style="font-size:1.5rem">${session.title}</h1>
-      <p class="text-sm text-muted mt-1">${formatDate(session.date)} · ${session.time || ''}</p>
-      <div class="flex gap-4 mt-4 flex-wrap">
-        <div class="stat-card blue" style="padding:12px 16px;flex:1;min-width:120px">
-          <div class="text-xs text-muted">Volume</div>
-          <div class="font-bold" style="font-size:1.25rem">${formatVolume(getSessionVolume(session))}</div>
+      <div class="seance-hero" style="--hero-color:${typeColor}">
+        <div class="seance-hero-top">
+          <a href="../index.html" class="seance-back-btn" aria-label="Retour">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </a>
+          <span class="seance-hero-type" style="background:${typeColor}25;color:${typeColor};border:1px solid ${typeColor}45">
+            ${TYPE_LABELS[session.type] || session.type}
+          </span>
+          ${prs.length ? `<span class="pr-badge" style="font-size:.625rem">🏆 ${prs.length} PR${prs.length > 1 ? 's' : ''}</span>` : ''}
         </div>
-        <div class="stat-card purple" style="padding:12px 16px;flex:1;min-width:120px">
-          <div class="text-xs text-muted">Durée</div>
-          <div class="font-bold" style="font-size:1.25rem">${formatDuration(session.duration_minutes)}</div>
-        </div>
-        <div class="stat-card orange" style="padding:12px 16px;flex:1;min-width:120px">
-          <div class="text-xs text-muted">Calories</div>
-          <div class="font-bold" style="font-size:1.25rem">${session.calories_kcal || '—'} kcal</div>
-        </div>
-        <div class="stat-card green" style="padding:12px 16px;flex:1;min-width:120px">
-          <div class="text-xs text-muted">Exercices</div>
-          <div class="font-bold" style="font-size:1.25rem">${session.exercise_count || session.exercises?.length || '—'}</div>
+        <h1 class="seance-hero-title">${session.title}</h1>
+        <p class="seance-hero-date">${formatDate(session.date)}${session.time ? ' · ' + session.time : ''}</p>
+        <div class="seance-hero-stats">
+          <div class="seance-stat-chip">
+            <div class="seance-stat-val">${formatVolume(getSessionVolume(session))}</div>
+            <div class="seance-stat-lbl">Volume</div>
+          </div>
+          <div class="seance-stat-chip">
+            <div class="seance-stat-val">${formatDuration(session.duration_minutes)}</div>
+            <div class="seance-stat-lbl">Durée</div>
+          </div>
+          <div class="seance-stat-chip">
+            <div class="seance-stat-val">${session.calories_kcal || '—'}</div>
+            <div class="seance-stat-lbl">kcal</div>
+          </div>
+          <div class="seance-stat-chip">
+            <div class="seance-stat-val">${session.exercise_count || session.exercises?.length || '—'}</div>
+            <div class="seance-stat-lbl">Exercices</div>
+          </div>
         </div>
       </div>
     `;
@@ -855,19 +863,21 @@ function initSeance(sessions) {
 
       return `
         <div class="exercise-block fade-in">
-          <div class="exercise-block-header">
-            <div style="width:4px;height:32px;border-radius:2px;background:${color};flex-shrink:0"></div>
+          <div class="exercise-block-header" style="background:linear-gradient(135deg,${color}22 0%,${color}06 60%,transparent 100%)">
+            <div style="width:36px;height:36px;border-radius:10px;background:${color}28;border:1px solid ${color}40;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
+            </div>
             <div style="flex:1;min-width:0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-semibold text-sm">${ex.name}</span>
                 ${isPR ? '<span class="pr-badge" style="font-size:.6875rem">🏆 PR</span>' : ''}
               </div>
-              <div class="text-xs text-muted">${formatCategory(ex.category)} · ${ex.sets.length} séries · max ${maxW || '?'} kg</div>
+              <div class="text-xs" style="color:${color}bb;margin-top:1px">${formatCategory(ex.category)} · ${ex.sets.length} séries · max ${maxW || '?'} kg</div>
             </div>
             <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:6px">
               <button class="rename-ex-btn btn btn-ghost" data-ex-index="${exIndex}" title="Renommer cet exercice">✏️ Renommer</button>
               <div>
-                <div class="text-sm font-semibold">${formatVolume(exVol)}</div>
+                <div class="text-sm font-semibold" style="color:${color}">${formatVolume(exVol)}</div>
                 <div class="text-xs text-muted">volume</div>
               </div>
             </div>
@@ -894,14 +904,14 @@ function initSeance(sessions) {
               <div style="font-size:.6875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
                 Évolution depuis le début · ${history.length} séance${history.length > 1 ? 's' : ''}
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="exercise-charts-grid">
                 <div>
-                  <div style="font-size:.6875rem;color:var(--text-muted);margin-bottom:4px">Charge max (kg)</div>
-                  <div style="height:100px"><canvas id="ex-weight-${exIndex}"></canvas></div>
+                  <div class="exercise-chart-label">Charge max (kg)</div>
+                  <div class="exercise-chart-wrap"><canvas id="ex-weight-${exIndex}"></canvas></div>
                 </div>
                 <div>
-                  <div style="font-size:.6875rem;color:var(--text-muted);margin-bottom:4px">Volume par séance (kg)</div>
-                  <div style="height:100px"><canvas id="ex-volume-${exIndex}"></canvas></div>
+                  <div class="exercise-chart-label">Volume par séance (kg)</div>
+                  <div class="exercise-chart-wrap"><canvas id="ex-volume-${exIndex}"></canvas></div>
                 </div>
               </div>
             </div>

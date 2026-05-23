@@ -661,6 +661,239 @@ hr.divider {
 .cat-chaine_posterieure { background: var(--cyan); }
 .cat-autre              { background: var(--text-muted); }
 
+/* ── Page Séance — style Apple Health ──────────────────────────────────── */
+
+/* Hero header */
+.seance-hero {
+  margin-bottom: 28px;
+}
+.seance-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.seance-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.seance-back-btn:hover { background: var(--bg-card-hover); }
+.seance-back-btn svg   { width: 18px; height: 18px; }
+
+.seance-hero-type {
+  font-size: .6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.seance-hero-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.seance-hero-date {
+  font-size: .875rem;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+.seance-hero-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.seance-stat-chip {
+  flex: 1;
+  min-width: 72px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px 12px;
+  text-align: center;
+}
+.seance-stat-val {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.seance-stat-lbl {
+  font-size: .5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+}
+
+/* Section titles */
+.seance-section-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text-primary);
+}
+
+/* Card headers */
+.seance-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.seance-card-icon { font-size: 1.125rem; }
+.seance-card-title {
+  font-size: .9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Mobile : full Apple Health experience ──────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Navbar transparent pour laisser le gradient briller */
+  body[data-page="seance"] .navbar {
+    background: transparent !important;
+    border-bottom: none;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none;
+  }
+
+  /* Hero full-width cassant le padding du page-wrapper */
+  .seance-hero {
+    margin-top: calc(-1 * (var(--nav-height) + 16px));
+    margin-left: -14px;
+    margin-right: -14px;
+    padding: calc(var(--nav-height) + 22px) 20px 28px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  /* Gradient de couleur derrière le hero */
+  .seance-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 60% 0%, var(--hero-color, var(--accent)) 0%, transparent 70%),
+                linear-gradient(180deg, var(--hero-color, var(--accent)) 0%, transparent 55%);
+    opacity: 0.22;
+  }
+
+  /* Fondu vers le bas */
+  .seance-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--bg-app));
+  }
+
+  /* Z-index pour le contenu au-dessus des pseudo-elements */
+  .seance-hero-top,
+  .seance-hero-title,
+  .seance-hero-date,
+  .seance-hero-stats { position: relative; z-index: 1; }
+
+  /* Bouton retour — style verre */
+  .seance-back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Chips stats — verre également */
+  .seance-stat-chip {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    padding: 10px 8px;
+  }
+  .seance-stat-val { font-size: .9375rem; }
+
+  /* Cards — sans bordure, shadow douce */
+  body[data-page="seance"] .card,
+  body[data-page="seance"] .exercise-block,
+  body[data-page="seance"] .alert-card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.28);
+  }
+  body[data-page="seance"] .exercise-block-header {
+    border-radius: 18px 18px 0 0;
+  }
+  body[data-page="seance"] .exercise-block-body {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* Light mode */
+html.light-mode .seance-back-btn {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 640px) {
+  html.light-mode .seance-hero::before { opacity: 0.3; }
+  html.light-mode .seance-hero::after {
+    background: linear-gradient(to bottom, transparent, var(--bg-app));
+  }
+  html.light-mode .seance-back-btn {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+  html.light-mode .seance-stat-chip {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(255, 255, 255, 0.85);
+  }
+  html.light-mode body[data-page="seance"] .card,
+  html.light-mode body[data-page="seance"] .exercise-block {
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.07);
+  }
+}
+
+/* ── Exercice history charts grid ───────────────────────────────────────── */
+.exercise-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.exercise-chart-label {
+  font-size: .6875rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.exercise-chart-wrap {
+  height: 100px;
+}
+@media (max-width: 640px) {
+  .exercise-charts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .exercise-chart-wrap {
+    height: 130px;
+  }
+}
+
 /* ── PR Medal Carousel ──────────────────────────────────────────────────── */
 .pr-carousel {
   display: flex;
