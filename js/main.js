@@ -354,6 +354,7 @@ function renderPRCarousel(sessions) {
       type:     pr.type,
       exercise: pr.exercise.replace(/\s*\(.*?\)\s*$/, ''),
       value:    pr.value,
+      prev:     pr.prev || null,
       sub:      pr.label,
       date:     s.date,
     }))
@@ -397,6 +398,7 @@ function renderPRCarousel(sessions) {
                   <div class="pr-glass-type">${medal.label}</div>
                   <div class="pr-glass-name">${item.exercise}</div>
                   <div class="pr-glass-value">${item.value}</div>
+                  ${item.prev ? `<div class="pr-glass-prev">← ${item.prev}</div>` : ''}
                   <div class="pr-glass-sub">${item.sub}</div>
                   ${item.date ? `<div class="pr-glass-date">${formatDate(item.date)}</div>` : ''}
                 </div>

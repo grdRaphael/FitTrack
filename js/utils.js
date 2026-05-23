@@ -622,10 +622,10 @@ function detectSessionPRs(session, allSessions) {
       continue;
     }
     if (currMaxWeight > prev.maxWeight) {
-      prs.push({ exercise: ex.name, type: 'charge', label: 'Nouveau PR charge', value: `${currMaxWeight} kg (était ${prev.maxWeight} kg)` });
+      prs.push({ exercise: ex.name, type: 'charge', label: 'Nouveau PR charge', value: `${currMaxWeight} kg`, prev: `${prev.maxWeight} kg` });
     }
     if (currVolume > prev.maxVolume) {
-      prs.push({ exercise: ex.name, type: 'volume', label: 'Nouveau PR volume', value: `${currVolume} kg (était ${prev.maxVolume} kg)` });
+      prs.push({ exercise: ex.name, type: 'volume', label: 'Nouveau PR volume', value: `${currVolume} kg`, prev: `${prev.maxVolume} kg` });
     }
   }
   return prs;
