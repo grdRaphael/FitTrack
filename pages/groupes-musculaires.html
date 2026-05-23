@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Groupes musculaires</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+</head>
+<body data-page="groupes">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./exercices.html" class="nav-link">Exercices</a>
+        <a href="./importer.html" class="nav-link">+ Import</a>
+        <button class="theme-toggle" id="theme-toggle" title="Basculer le thème">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <style>
+    @media (max-width:639px) { #nav-symptomes { display:none; } }
+  </style>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div id="loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p class="text-secondary text-sm">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- ── App ─────────────────────────────────────────────────────────────── -->
+  <div id="app" class="hidden page-wrapper">
+
+    <div class="mb-6">
+      <h1 class="page-title">Groupes musculaires</h1>
+      <p class="page-subtitle">Répartition et équilibre du volume d'entraînement</p>
+    </div>
+
+    <!-- Graphiques côte à côte -->
+    <div class="grid-2 mb-6">
+
+      <!-- Donut répartition globale -->
+      <div class="card">
+        <div class="card-title mb-4">Répartition du volume total</div>
+        <div class="chart-container" style="height:280px"><canvas id="chart-distribution"></canvas></div>
+      </div>
+
+      <!-- Détail par catégorie -->
+      <div class="card">
+        <div class="card-title mb-4">Volume par catégorie</div>
+        <div id="category-table"></div>
+      </div>
+
+    </div>
+
+    <!-- Barres semaines -->
+    <div class="card mb-6">
+      <div class="card-title mb-4">Volume par groupe musculaire — par semaine (kg)</div>
+      <div class="chart-container" style="height:280px"><canvas id="chart-weekly"></canvas></div>
+    </div>
+
+    <!-- Déséquilibres -->
+    <div class="card">
+      <div class="flex items-center gap-2 mb-4">
+        <span>⚖️</span>
+        <h3 class="font-semibold">Détection de déséquilibres</h3>
+        <span class="badge badge-amber" style="font-size:.6875rem">Seuil 8% du volume</span>
+      </div>
+      <div id="imbalances-list"></div>
+    </div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

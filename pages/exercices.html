@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Exercices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+</head>
+<body data-page="exercices">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./exercices.html" class="nav-link active">Exercices</a>
+        <a href="./importer.html" class="nav-link">+ Import</a>
+        <button class="theme-toggle" id="theme-toggle" title="Basculer le thème">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <style>
+    @media (max-width:639px) { #nav-muscles, #nav-symptomes { display:none; } }
+  </style>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div id="loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p class="text-secondary text-sm">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- ── App ─────────────────────────────────────────────────────────────── -->
+  <div id="app" class="hidden page-wrapper">
+
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <div>
+        <h1 class="page-title">Exercices</h1>
+        <p class="page-subtitle">Suivi de progression par exercice</p>
+      </div>
+    </div>
+
+    <!-- Recherche -->
+    <div style="position:relative;max-width:400px;margin-bottom:16px">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)">🔍</span>
+      <input type="text" id="search-input" class="search-input" placeholder="Rechercher un exercice...">
+    </div>
+
+    <!-- Filtres catégorie -->
+    <div id="category-filters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px"></div>
+
+    <!-- Grille exercices -->
+    <div id="exercise-grid" class="grid-auto"></div>
+
+  </div>
+
+  <!-- ── Modal exercice ──────────────────────────────────────────────────── -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

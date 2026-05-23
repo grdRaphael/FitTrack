@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Journal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+</head>
+<body data-page="journal">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link active">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./exercices.html" class="nav-link" id="nav-ex">Exercices</a>
+        <a href="./importer.html" class="nav-link">Importer</a>
+        <button class="theme-toggle" id="theme-toggle" title="Basculer le thème">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <style>
+    @media (max-width:639px) { #nav-ex { display:none; } }
+  </style>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div id="loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p class="text-secondary text-sm">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- ── App ─────────────────────────────────────────────────────────────── -->
+  <div id="app" class="hidden page-wrapper">
+
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <div>
+        <h1 class="page-title">Journal d'entraînement</h1>
+        <p class="page-subtitle" id="imported-count"></p>
+      </div>
+      <a href="./importer.html" class="btn btn-primary" style="flex-shrink:0">+ Importer une séance</a>
+    </div>
+
+    <!-- Filtres -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:24px">
+
+      <!-- Recherche -->
+      <div style="position:relative;flex:1;min-width:200px;max-width:320px">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Exercice, type, titre...">
+      </div>
+
+      <!-- Type -->
+      <select id="type-filter" style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:.875rem;padding:9px 12px;outline:none;cursor:pointer;min-width:160px">
+        <option value="tous">Tous les types</option>
+        <option value="haut_du_corps">Haut du corps</option>
+        <option value="bas_du_corps">Bas du corps</option>
+        <option value="full_body">Full body</option>
+        <option value="cardio">Cardio</option>
+      </select>
+
+      <!-- Période -->
+      <div style="display:flex;gap:4px">
+        <button class="period-btn" data-days="7">7j</button>
+        <button class="period-btn" data-days="30">30j</button>
+        <button class="period-btn" data-days="90">90j</button>
+        <button class="period-btn active" data-days="0">Tout</button>
+      </div>
+
+      <!-- Compteur -->
+      <span class="text-sm text-muted" id="session-count"></span>
+    </div>
+
+    <!-- Liste séances -->
+    <div id="journal-list"></div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

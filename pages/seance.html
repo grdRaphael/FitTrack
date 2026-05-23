@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Détail séance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+</head>
+<body data-page="seance">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./exercices.html" class="nav-link" id="nav-ex">Exercices</a>
+        <a href="./importer.html" class="nav-link">+ Import</a>
+        <button class="theme-toggle" id="theme-toggle" title="Basculer le thème">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <style>
+    @media (max-width:639px) { #nav-ex, #nav-muscles, #nav-symptomes { display:none; } }
+    /* ── Rename modal ─────────────────────────────────────────────────────── */
+    #rename-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; transition: opacity .18s;
+    }
+    #rename-backdrop.open { opacity: 1; }
+    #rename-modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%; max-width: 460px;
+      box-shadow: var(--shadow);
+      transform: translateY(12px); transition: transform .18s;
+    }
+    #rename-backdrop.open #rename-modal { transform: translateY(0); }
+    .rename-results-list {
+      max-height: 240px; overflow-y: auto;
+      border: 1px solid var(--border); border-radius: 8px;
+      margin-top: 8px;
+    }
+    .rename-result-item {
+      padding: 9px 14px; font-size: .875rem; cursor: pointer;
+      border-bottom: 1px solid var(--border); transition: background .1s;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .rename-result-item:last-child { border-bottom: none; }
+    .rename-result-item:hover { background: var(--bg-card-hover); }
+    .rename-ex-btn {
+      opacity: 0; transition: opacity .15s;
+      padding: 3px 8px !important; font-size: .6875rem !important;
+      color: var(--text-muted) !important;
+    }
+    .exercise-block:hover .rename-ex-btn { opacity: 1; }
+    @media (max-width:768px) { .rename-ex-btn { opacity: 1; } }
+    /* Rename modal — bottom-sheet on mobile */
+    @media (max-width:640px) {
+      #rename-backdrop { align-items: flex-end; padding: 0; }
+      #rename-modal { max-width: 100%; border-radius: 18px 18px 0 0; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+    }
+  </style>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div id="loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p class="text-secondary text-sm">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- ── App ─────────────────────────────────────────────────────────────── -->
+  <div id="app" class="hidden page-wrapper" style="max-width:800px">
+
+    <!-- Header séance -->
+    <div id="seance-header" class="mb-6"></div>
+
+    <!-- PRs -->
+    <div id="prs-section"></div>
+
+    <!-- Comparaison séance précédente -->
+    <div id="comparison-section" class="mb-6"></div>
+
+    <!-- Exercices détaillés -->
+    <div class="mb-6">
+      <h2 class="font-semibold mb-4">Exercices</h2>
+      <div id="exercices-list"></div>
+    </div>
+
+    <!-- Symptômes -->
+    <div class="card mb-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span>🔬</span>
+        <h3 class="font-semibold">Symptômes</h3>
+      </div>
+      <div id="symptoms-detail"></div>
+    </div>
+
+    <!-- Feedback subjectif -->
+    <div class="card">
+      <div class="flex items-center gap-2 mb-3">
+        <span>💬</span>
+        <h3 class="font-semibold">Ressenti subjectif</h3>
+      </div>
+      <p id="feedback-text" class="text-sm text-secondary" style="font-style:italic;line-height:1.6">—</p>
+    </div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

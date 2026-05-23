@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Symptômes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+</head>
+<body data-page="symptomes">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./exercices.html" class="nav-link" id="nav-muscles">Exercices</a>
+        <a href="./importer.html" class="nav-link">+ Import</a>
+        <button class="theme-toggle" id="theme-toggle" title="Basculer le thème">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <style>
+    @media (max-width:639px) { #nav-muscles { display:none; } }
+  </style>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div id="loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <p class="text-secondary text-sm">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- ── App ─────────────────────────────────────────────────────────────── -->
+  <div id="app" class="hidden page-wrapper">
+
+    <div class="mb-6">
+      <h1 class="page-title">Suivi des symptômes</h1>
+      <p class="page-subtitle">Picotements et sensations — évolution clinique</p>
+    </div>
+
+    <!-- Graphique intensité -->
+    <div class="card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="card-title">Intensité des picotements (/10) par séance</div>
+        <div style="display:flex;gap:8px;font-size:.75rem">
+          <span style="color:#ef4444">● Pendant</span>
+          <span style="color:#f97316">● Fin</span>
+          <span style="color:#f59e0b">● 24h</span>
+          <span style="color:#8b5cf6">● 48h</span>
+        </div>
+      </div>
+      <div class="chart-container" style="height:260px"><canvas id="chart-intensity"></canvas></div>
+    </div>
+
+    <!-- Heatmap + corrélation -->
+    <div class="grid-2 mb-6">
+
+      <!-- Heatmap localisations -->
+      <div class="card">
+        <div class="card-title mb-3">Zones touchées (toutes séances)</div>
+        <p class="text-xs text-muted mb-4">Plus la couleur est chaude, plus la zone est fréquente.</p>
+        <div id="location-heatmap" class="location-grid"></div>
+      </div>
+
+      <!-- Corrélation volume / intensité -->
+      <div class="card">
+        <div class="card-title mb-4">Corrélation volume ↔ intensité pendant</div>
+        <div class="chart-container" style="height:240px"><canvas id="chart-correlation"></canvas></div>
+      </div>
+
+    </div>
+
+    <!-- Tableau historique -->
+    <div class="card">
+      <h3 class="font-semibold mb-4">Historique détaillé</h3>
+      <div id="symptoms-table"></div>
+    </div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

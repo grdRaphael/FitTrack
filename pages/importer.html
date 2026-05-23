@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0f4fa" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FitTrack — Importer une séance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../entrainements.js"></script>
+  <style>
+    .import-tab {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: .875rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-muted);
+      margin-bottom: -1px;
+      transition: color .15s;
+    }
+    .import-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+    .preview-session-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .imported-session-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .imported-session-row:last-child { border-bottom: none; }
+    .intensity-pill {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: .875rem;
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .intensity-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .sym-loc-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      font-size: .8125rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .sym-loc-label:has(input:checked) {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    textarea.ft-textarea {
+      width: 100%;
+      height: 240px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: .8125rem;
+      padding: 14px;
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+      transition: border-color .15s;
+    }
+    textarea.ft-textarea:focus { border-color: var(--accent); }
+    textarea.ft-textarea::placeholder { color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: .8125rem; }
+  </style>
+</head>
+<body data-page="importer">
+
+  <!-- Navbar -->
+  <nav class="navbar" style="position:fixed;top:0;left:0;right:0;z-index:50">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="../index.html" class="nav-logo">
+        <span class="nav-logo-badge">FT</span>
+        <span>FitTrack</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="../index.html" class="nav-link">Dashboard</a>
+        <a href="./journal.html" class="nav-link">Journal</a>
+        <a href="./calendrier.html" class="nav-link">Calendrier</a>
+        <a href="./importer.html" class="nav-link active">Importer</a>
+        <button class="theme-toggle" id="theme-toggle"><span id="theme-icon">☀️</span></button>
+      </div>
+    </div>
+  </nav>
+  <div id="loading" style="display:none"></div>
+
+  <!-- App -->
+  <div id="app" class="page-wrapper" style="max-width:760px">
+
+    <div class="mb-6">
+      <h1 class="page-title">Importer une séance</h1>
+      <p class="page-subtitle">Colle directement le texte Motra — pas besoin de Claude pour convertir</p>
+    </div>
+
+    <!-- Workflow -->
+    <div class="card mb-6" style="background:var(--accent-glow-lg);border-color:var(--accent)">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
+        <div>
+          <div style="font-size:1.75rem;margin-bottom:6px">📱</div>
+          <div class="text-xs font-semibold mb-1">1. Exporte depuis Motra</div>
+          <div class="text-xs text-muted">Partage ou copie le texte de ta séance</div>
+        </div>
+        <div>
+          <div style="font-size:1.75rem;margin-bottom:6px">📋</div>
+          <div class="text-xs font-semibold mb-1">2. Colle ici</div>
+          <div class="text-xs text-muted">Le texte brut, exactement comme Motra le donne</div>
+        </div>
+        <div>
+          <div style="font-size:1.75rem;margin-bottom:6px">✅</div>
+          <div class="text-xs font-semibold mb-1">3. Importe</div>
+          <div class="text-xs text-muted">Ajoute les symptômes et valide en 10 secondes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px">
+      <button class="import-tab active" data-tab="motra" style="border-bottom-color:var(--accent);color:var(--accent)">
+        📱 Texte Motra
+      </button>
+      <button class="import-tab" data-tab="json">
+        { } JSON direct
+      </button>
+    </div>
+
+    <!-- Textarea universelle -->
+    <textarea id="text-input" class="ft-textarea" style="margin-bottom:12px"></textarea>
+
+    <!-- Boutons d'action -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+      <button id="parse-btn" class="btn btn-primary">🔍 Analyser</button>
+      <button id="cancel-btn" class="btn btn-ghost hidden">✕ Effacer</button>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-left:auto">
+        <span class="text-xs text-muted">Ou import fichier :</span>
+        <input type="file" id="file-input" accept=".json,.txt" style="display:none">
+        <span class="btn btn-ghost" style="font-size:.8125rem" onclick="document.getElementById('file-input').click()">📁 Fichier</span>
+      </label>
+    </div>
+
+    <!-- Erreur -->
+    <div id="import-error" class="hidden" style="background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:.8125rem;color:var(--red);margin-bottom:16px"></div>
+
+    <!-- Preview -->
+    <div id="import-preview" class="hidden card mb-4"></div>
+
+    <!-- ── Formulaire symptômes (affiché après parse Motra) ──────────────── -->
+    <div id="symptoms-form" class="hidden card mb-4">
+      <div style="font-size:.875rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+        🔬 Symptômes <span class="text-xs text-muted font-normal">(facultatif — les seules infos absentes de Motra)</span>
+      </div>
+
+      <!-- Intensité pendant -->
+      <div class="mb-4">
+        <div class="text-xs text-muted mb-2">Intensité des picotements <strong>pendant</strong> la séance</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="intensity-pill" data-val="0"  style="background:var(--bg-surface);color:var(--text-secondary)">0</button>
+          <button class="intensity-pill" data-val="1">1</button>
+          <button class="intensity-pill" data-val="2">2</button>
+          <button class="intensity-pill" data-val="3">3</button>
+          <button class="intensity-pill" data-val="4">4</button>
+          <button class="intensity-pill" data-val="5">5</button>
+          <button class="intensity-pill" data-val="6">6</button>
+          <button class="intensity-pill" data-val="7">7</button>
+          <button class="intensity-pill" data-val="8">8</button>
+          <button class="intensity-pill" data-val="9">9</button>
+          <button class="intensity-pill" data-val="10">10</button>
+          <span id="sym-intensity-val" style="display:none">0</span>
+        </div>
+      </div>
+
+      <!-- Localisations (cachées si intensité = 0) -->
+      <div id="sym-locs-section" style="display:none;margin-bottom:16px">
+        <div class="text-xs text-muted mb-2">Zones touchées</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="pied_gauche">Pied G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="pied_droit">Pied D</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="mollet_gauche">Mollet G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="mollet_droit">Mollet D</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="fessier_gauche">Fessier G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="fessier_droit">Fessier D</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="genou_gauche">Genou G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="genou_droit">Genou D</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="lombaires">Lombaires</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="nuque">Nuque</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="main_gauche">Main G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="main_droite">Main D</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="sacro_iliaque">Sacro-iliaque</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="face_externe_jambe_gauche">Face ext. jambe G</label>
+          <label class="sym-loc-label"><input type="checkbox" class="sym-loc-cb" value="face_externe_jambe_droit">Face ext. jambe D</label>
+        </div>
+        <input type="text" id="sym-notes" placeholder="Notes symptômes (ex : nouveau territoire fessier depuis la reprise)"
+          style="width:100%;margin-top:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:.8125rem;padding:8px 12px;outline:none">
+      </div>
+
+      <!-- Ressenti subjectif -->
+      <div>
+        <div class="text-xs text-muted mb-2">Ressenti subjectif (facultatif)</div>
+        <textarea id="sym-feedback" placeholder="Ex : Bonne séance, épaules encore limitantes en fin..."
+          style="width:100%;height:70px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:.8125rem;padding:8px 12px;outline:none;resize:vertical;line-height:1.5"></textarea>
+      </div>
+    </div>
+
+    <!-- Bouton import -->
+    <button id="import-btn" class="btn btn-primary hidden" style="width:100%;justify-content:center;padding:13px;font-size:.9375rem;margin-bottom:32px">
+      ✅ Importer dans FitTrack
+    </button>
+
+    <hr class="divider">
+
+    <!-- Liste des séances importées -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <span class="font-semibold text-sm">Séances importées</span>
+        <span class="text-xs text-muted" style="margin-left:8px">(<span id="stored-count">0</span> dans ce navigateur)</span>
+      </div>
+      <button id="clear-all-btn" class="btn btn-ghost hidden" style="color:var(--red);font-size:.75rem;padding:4px 10px">🗑️ Tout supprimer</button>
+    </div>
+    <div id="imported-list"></div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>
