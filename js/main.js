@@ -372,45 +372,51 @@ function renderPRCarousel(sessions) {
   if (!items.length) { el.innerHTML = ''; return; }
 
   el.innerHTML = `
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-3">
       <div>
         <h3 class="font-semibold" style="font-size:1rem">Records & Progressions</h3>
         <p class="text-xs text-muted" style="margin-top:2px">Tes dernières performances</p>
       </div>
-      <div class="pr-carousel-dots" id="pr-dots">
-        ${items.map((_, i) => `<span class="pr-dot${i === 0 ? ' active' : ''}"></span>`).join('')}
+      <div class="pr-glass-dots" id="pr-dots">
+        ${items.map((_, i) => `<span class="pr-glass-dot${i === 0 ? ' active' : ''}"></span>`).join('')}
       </div>
     </div>
-    <div class="pr-carousel" id="pr-carousel">
-      ${items.map((item, i) => {
-        const medal = MEDAL[item.type] || MEDAL.premier;
-        return `
-          <div class="pr-carousel-card fade-in" style="animation-delay:${i * 0.05}s">
-            <div class="pr-medal-wrap">
-              <img src="${medal.img}" class="pr-medal-img" alt="${medal.label}"
-                   style="animation-delay:${i * 0.4}s">
+    <div class="pr-glass-outer">
+      <div class="pr-glass-carousel" id="pr-carousel">
+        ${items.map((item, i) => {
+          const medal = MEDAL[item.type] || MEDAL.premier;
+          const delay = `${i * 0.9}s`;
+          return `
+            <div class="pr-glass-item">
+              <div class="pr-glass-card" style="--card-color:${medal.color};animation-delay:${delay}">
+                <div class="pr-glass-shine" style="animation-delay:${delay}"></div>
+                <div class="pr-glass-medal">
+                  <img src="${medal.img}" alt="${medal.label}" style="animation-delay:${i * 0.35}s">
+                </div>
+                <div class="pr-glass-content">
+                  <div class="pr-glass-type">${medal.label}</div>
+                  <div class="pr-glass-name">${item.exercise}</div>
+                  <div class="pr-glass-value">${item.value}</div>
+                  <div class="pr-glass-sub">${item.sub}</div>
+                  ${item.date ? `<div class="pr-glass-date">${formatDate(item.date)}</div>` : ''}
+                </div>
+              </div>
             </div>
-            <div class="pr-medal-type" style="color:${medal.color}">${medal.label}</div>
-            <div class="pr-medal-name">${item.exercise}</div>
-            <div class="pr-medal-value" style="color:${medal.color}">${item.value}</div>
-            <div class="pr-medal-sub">${item.sub}</div>
-            ${item.date ? `<div class="pr-medal-date">${formatDate(item.date)}</div>` : ''}
-          </div>
-        `;
-      }).join('')}
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
 
   const carousel = el.querySelector('#pr-carousel');
-  const dots     = el.querySelectorAll('.pr-dot');
+  const dots     = el.querySelectorAll('.pr-glass-dot');
   let isScrolling;
 
   carousel.addEventListener('scroll', () => {
     clearTimeout(isScrolling);
     isScrolling = setTimeout(() => {
-      const cardW = carousel.querySelector('.pr-carousel-card')?.offsetWidth || 1;
-      const gap   = 16;
-      const idx   = Math.round(carousel.scrollLeft / (cardW + gap));
+      const cardW = carousel.querySelector('.pr-glass-card')?.offsetWidth || 1;
+      const idx   = Math.round(carousel.scrollLeft / (cardW + 12));
       dots.forEach((d, i) => d.classList.toggle('active', i === idx));
     }, 50);
   });

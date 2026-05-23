@@ -959,112 +959,234 @@ html.light-mode .ah-tt {
 }
 
 /* ── PR Medal Carousel ──────────────────────────────────────────────────── */
-.pr-carousel {
+/* ── PR Carousel — Glassmorphism premium ─────────────────────────────────── */
+
+@keyframes medalFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes prShimmy {
+  0%, 100% { transform: perspective(800px) rotateY(0deg) skewX(0deg); }
+  50%       { transform: perspective(800px) rotateY(22deg) skewX(2.5deg); }
+}
+@keyframes prShine {
+  0%, 15% { top: -140px; }
+  65%, 100% { top: 340px; }
+}
+
+.pr-glass-outer {
+  margin: 0 -20px;
+}
+@media (max-width: 640px) {
+  .pr-glass-outer { margin: 0 -14px; }
+}
+
+.pr-glass-carousel {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 4px 2px 12px;
+  padding: 6px 20px 20px;
   -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
 }
-.pr-carousel::-webkit-scrollbar { display: none; }
+.pr-glass-carousel::-webkit-scrollbar { display: none; }
+@media (max-width: 640px) {
+  .pr-glass-carousel { padding: 6px 14px 20px; }
+}
 
-.pr-carousel-card {
-  flex: 0 0 200px;
-  scroll-snap-align: start;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px 16px 16px;
-  text-align: center;
+/* Wrapper de chaque item (card + shadow) */
+.pr-glass-item {
+  flex: 0 0 380px;
+  scroll-snap-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  gap: 0;
 }
-.pr-carousel-card:hover {
-  border-color: var(--border-light);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
+@media (max-width: 640px) {
+  .pr-glass-item { flex: 0 0 calc(100vw - 44px); }
 }
 
-.pr-medal-wrap {
-  width: 96px;
-  height: 96px;
-  margin-bottom: 14px;
-  flex-shrink: 0;
+.pr-glass-card {
+  width: 100%;
+  position: relative;
+  border-radius: 24px;
+  padding: 20px 20px 18px;
+  overflow: hidden;
+  min-height: 144px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: default;
+
+  /* verre coloré — teinte de la médaille */
+  background: color-mix(in srgb, var(--card-color, #8b5cf6) 18%, rgba(8, 13, 22, 0.38));
+  backdrop-filter: blur(48px) saturate(240%) brightness(1.1);
+  -webkit-backdrop-filter: blur(48px) saturate(240%) brightness(1.1);
+
+  /* bordures asymétriques : lumière en haut/gauche comme un biseautage */
+  border-top:    1px solid color-mix(in srgb, var(--card-color, #8b5cf6) 55%, rgba(255,255,255,0.65));
+  border-left:   1px solid color-mix(in srgb, var(--card-color, #8b5cf6) 35%, rgba(255,255,255,0.3));
+  border-right:  1px solid color-mix(in srgb, var(--card-color, #8b5cf6) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--card-color, #8b5cf6) 18%, transparent);
+
+  box-shadow:
+    /* lueur externe colorée — signature d'un objet rare */
+    0 0 52px -6px color-mix(in srgb, var(--card-color, #8b5cf6) 55%, transparent),
+    /* profondeur */
+    0 20px 56px rgba(0, 0, 0, 0.45),
+    /* reflet interne en haut */
+    inset 0 1px 0 color-mix(in srgb, var(--card-color, #8b5cf6) 45%, rgba(255,255,255,0.55)),
+    inset 1px 0 0 color-mix(in srgb, var(--card-color, #8b5cf6) 22%, rgba(255,255,255,0.18));
+
+  animation: prShimmy 6s ease-in-out infinite;
 }
-.pr-medal-img {
+
+/* Bande lumineuse qui glisse en diagonale */
+.pr-glass-shine {
+  position: absolute;
+  width: 700px;
+  height: 90px;
+  left: -100px;
+  top: -140px;
+  transform: rotate(30deg);
+  background: linear-gradient(to bottom,
+    transparent,
+    color-mix(in srgb, var(--card-color, #8b5cf6) 28%, rgba(255,255,255,0.22)),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 3;
+  animation: prShine 6s ease-in-out infinite;
+}
+
+
+/* Blob couleur en bas à gauche */
+.pr-glass-card::before {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -30px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--card-color, #8b5cf6) 0%, transparent 65%);
+  opacity: 0.22;
+  pointer-events: none;
+}
+/* Reflet spéculaire en haut */
+.pr-glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.28), transparent);
+}
+
+.pr-glass-medal {
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  position: relative;
+  z-index: 1;
+}
+.pr-glass-medal img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
-  animation: medalFloat 3.2s ease-in-out infinite;
-}
-@keyframes medalFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50%       { transform: translateY(-7px) rotate(1deg); }
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+  animation: medalFloat 3.4s ease-in-out infinite;
 }
 
-.pr-medal-type {
-  font-size: .625rem;
+.pr-glass-content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+.pr-glass-type {
+  font-size: .5625rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: .08em;
-  margin-bottom: 6px;
+  letter-spacing: .12em;
+  color: var(--card-color, #8b5cf6);
+  margin-bottom: 5px;
 }
-.pr-medal-name {
-  font-size: .8125rem;
+.pr-glass-name {
+  font-size: .9375rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #f0f4fa;
   line-height: 1.3;
-  margin-bottom: 6px;
-  max-width: 100%;
+  margin-bottom: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pr-medal-value {
-  font-size: 1.25rem;
+.pr-glass-value {
+  font-size: 1.75rem;
   font-weight: 800;
-  letter-spacing: -.03em;
+  letter-spacing: -.04em;
   line-height: 1;
-  margin-bottom: 4px;
+  color: var(--card-color, #8b5cf6);
+  margin-bottom: 5px;
 }
-.pr-medal-sub {
+.pr-glass-sub {
   font-size: .6875rem;
-  color: var(--text-secondary);
+  color: rgba(240, 244, 250, 0.5);
+  font-weight: 500;
 }
-.pr-medal-date {
+.pr-glass-date {
   font-size: .625rem;
-  color: var(--text-muted);
-  margin-top: 6px;
+  color: rgba(240, 244, 250, 0.32);
+  margin-top: 5px;
+  font-weight: 500;
 }
 
-.pr-carousel-dots {
+/* Dots */
+.pr-glass-dots {
   display: flex;
   align-items: center;
   gap: 5px;
 }
-.pr-dot {
+.pr-glass-dot {
   width: 5px;
   height: 5px;
-  border-radius: 50%;
+  border-radius: 3px;
   background: var(--border-light);
-  transition: background .2s, transform .2s, width .2s;
+  transition: width .25s ease, background .25s ease;
 }
-.pr-dot.active {
+.pr-glass-dot.active {
+  width: 20px;
   background: var(--accent);
-  transform: scale(1.4);
 }
 
+/* Mobile */
 @media (max-width: 640px) {
-  .pr-carousel-card { flex: 0 0 calc(70vw - 32px); scroll-snap-align: center; }
-  .pr-medal-wrap    { width: 110px; height: 110px; }
-  .pr-medal-value   { font-size: 1.375rem; }
+  .pr-glass-card  { min-height: 136px; padding: 18px 18px 16px; gap: 14px; }
+  .pr-glass-medal { width: 72px; height: 72px; }
+  .pr-glass-value { font-size: 1.5rem; }
+  .pr-glass-name  { font-size: .875rem; }
 }
+
+/* Light mode */
+html.light-mode .pr-glass-card {
+  background: rgba(255, 255, 255, 0.22);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+html.light-mode .pr-glass-name { color: var(--text-primary); }
+html.light-mode .pr-glass-sub  { color: var(--text-secondary); }
+html.light-mode .pr-glass-date { color: var(--text-muted); }
 
 /* ── Bottom Navigation — Liquid Glass flottant ──────────────────────────── */
 .bottom-nav {
