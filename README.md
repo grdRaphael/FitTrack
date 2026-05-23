@@ -1,122 +1,91 @@
-# FitTrack — Suivi sportif personnel
+# FitTrack — Suivi d'entraînement et de progression
 
-Site web statique (100% client-side) pour remplacer l'abonnement Motra.
+Application web de suivi sportif que j'ai développée pour suivre mes entraînements de musculation et ma progression dans le temps, sans dépendre d'un abonnement payant et avec un vrai support desktop.
 
-## Démarrage rapide
+---
 
-### Option 1 — Double-clic (le plus simple)
-Ouvrir `index.html` directement dans le navigateur. Ça marche sans serveur grâce à `entrainements.js`.
+## Le problème
 
-### Option 2 — Serveur local (recommandé pour Chrome)
+J'utilise **Motra** pour enregistrer mes séances : couplée à l'Apple Watch, son IA détecte automatiquement les exercices et les répétitions, et me génère un récapitulatif en fin de séance. Pratique, mais avec deux limites pour moi :
+
+1. **Le suivi de progression dans le temps est payant.** Je voulais voir mon évolution (charges, volume, par exercice) sans souscrire à l'abonnement.
+2. **Pas de support desktop.** Motra reste cantonnée au mobile, alors que je voulais analyser mes données sur grand écran, sous forme de tableaux de bord.
+
+Plutôt que de payer pour une fonctionnalité limitée, j'ai préféré construire mon propre outil, calibré sur mon besoin réel.
+
+---
+
+## La solution
+
+Une application web **100 % client-side** (aucun serveur, aucune base de données distante) dans laquelle j'importe mes séances et qui me génère automatiquement des tableaux de bord de progression — globale et par exercice.
+
+Elle a été **développée avec Claude Code** comme assistant, à partir de ma propre spécification du besoin, de l'architecture et du format de données. Le travail de conception (modèle de données, logique du parser d'import, choix techniques) et l'itération sur les cas réels (formats d'export multiples, edge cases) sont le cœur du projet.
+
+---
+
+## Le workflow
+
+1. **Enregistrement** — Je fais ma séance, Motra + Apple Watch détectent exercices et répétitions.
+2. **Export** — En fin de séance, j'exporte le récapitulatif sous forme de **texte**.
+3. **Import** — Je colle ce texte dans FitTrack (page *Importer*), qui le parse automatiquement. Je peux aussi ajouter mes symptômes/ressenti en quelques clics.
+4. **Analyse** — L'app génère mes tableaux de bord : évolution globale et détail par exercice.
+
+Et pendant une séance, si j'ai un doute sur ma charge ou mes reps de la dernière fois, je fais une **recherche rapide depuis mon téléphone** — l'app est déployée et accessible en ligne.
+
+---
+
+## Fonctionnalités
+
+- **Import automatique** du texte d'export Motra (parsing des exercices, séries, reps, charges).
+- **Dashboard global** : évolution du tonnage et tendance générale dans le temps.
+- **Suivi par exercice** : au clic sur un exercice, l'historique de la charge et du volume au fil des séances, avec mise en avant du record de charge.
+- **Comparaison rapide** : à combien était ma charge / mon volume à la dernière séance, pour ajuster en temps réel.
+- **Suivi du ressenti** : intensité et zones, croisés avec le tonnage, pour relier charge et sensations dans le temps.
+- **Persistance locale** : les données restent dans le navigateur (localStorage), aucune donnée envoyée à un tiers.
+
+---
+
+## Stack technique
+
+- **HTML / CSS / JavaScript vanilla** — pas de framework, pour un site léger et rapide.
+- **Chart.js** — visualisations (courbes d'évolution, graphiques combinés).
+- **localStorage** — persistance des données côté client.
+- **GitHub + Vercel** — versionnage et déploiement continu ; l'app est accessible depuis n'importe quel appareil, y compris mon téléphone.
+
+---
+
+## Démarrage local
+
 ```bash
-# Python 3
-python3 -m http.server 8080
+# Cloner le repo
+git clone https://github.com/<ton-user>/<ton-repo>.git
+cd <ton-repo>
 
-# Node.js (si installé)
+# Servir en local (au choix)
+python3 -m http.server 8080
+# ou
 npx serve .
 ```
-Puis ouvrir `http://localhost:8080`
+
+Puis ouvrir `http://localhost:8080`.
+
+L'app fonctionne aussi en ouvrant simplement `index.html` dans le navigateur.
 
 ---
 
-## Ajouter une séance
+## Déploiement
 
-Ouvrir `entrainements.js` et ajouter un objet dans le tableau `window.WORKOUTS_DATA = [...]`.
-
-**Structure minimale :**
-```javascript
-{
-  "id": "workout_YYYY-MM-DD_type",      // identifiant unique
-  "date": "2026-05-20",                  // format ISO obligatoire
-  "time": "10:00",
-  "title": "Nom de la séance",
-  "type": "haut_du_corps",               // haut_du_corps | bas_du_corps | full_body | cardio
-  "location": "salle",
-  "duration_minutes": 50,
-  "total_volume_kg_motra": 8000,         // volume Motra (ou calculé automatiquement si null)
-  "total_volume_kg_calculated": null,
-  "calories_kcal": 240,
-  "exercise_count": 6,
-  "tracking_source": "Motra",
-  "exercises": [
-    {
-      "order": 1,
-      "name": "Nom de l'exercice",
-      "category": "pectoraux",           // voir catégories ci-dessous
-      "muscle_groups": ["pectoraux"],
-      "type": "compound",                // compound | isolation
-      "equipment": "machine",
-      "sets": [
-        { "set_number": 1, "reps": 15, "weight_kg": 20, "is_warmup": true },
-        { "set_number": 2, "reps": 12, "weight_kg": 40, "is_warmup": false }
-      ],
-      "total_volume_kg": 480             // optionnel (calculé auto si null/absent)
-    }
-  ],
-  "symptoms": {
-    "during_session":   { "intensity": 3, "locations": ["pied_gauche"], "notes": "..." },
-    "end_of_session":   null,
-    "post_session_24h": null,
-    "post_session_48h": null
-  },
-  "subjective_feedback": "Ressenti global de la séance."
-}
-```
-
-**Catégories disponibles :**
-- `pectoraux` · `dos` · `épaules` · `bras` · `jambes` · `gainage` · `chaîne_postérieure`
-
-**Localisations symptômes :**
-- `pied_gauche` · `pied_droit` · `mollet_gauche` · `mollet_droit`
-- `fessier_gauche` · `fessier_droit` · `genou_gauche` · `genou_droit`
-- `lombaires` · `nuque` · `main_gauche` · `main_droite`
+Déployée sur **Vercel**, connectée au repo GitHub : chaque push sur la branche principale met le site à jour automatiquement. Comme tout est statique et client-side, aucune configuration serveur n'est nécessaire.
 
 ---
 
-## Héberger sur GitHub Pages
+## Pistes d'évolution
 
-1. Créer un repo GitHub (ex. `mon-fittrack`)
-2. Pousser tous les fichiers :
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial FitTrack"
-   git remote add origin https://github.com/TON_USER/mon-fittrack.git
-   git push -u origin main
-   ```
-3. Dans Settings → Pages → Source : **main branch / root**
-4. Le site sera disponible à `https://TON_USER.github.io/mon-fittrack/`
-
-Sur GitHub Pages, le site utilise automatiquement `fetch('./entrainements.json')` — tu peux donc aussi maintenir un `entrainements.json` en parallèle du `.js`.
+- Suivi des capacités fonctionnelles hors-salle (marche, etc.).
+- Compléter le ressenti à 24h / 48h après une séance.
+- Détection automatique des sauts de charge trop importants entre séances.
+- Export PDF des tableaux de bord.
 
 ---
 
-## Structure des fichiers
-
-```
-workout-tracker/
-├── index.html                   ← Dashboard principal
-├── entrainements.js             ← Tes données (à modifier !)
-├── pages/
-│   ├── exercices.html           ← Suivi par exercice
-│   ├── groupes-musculaires.html ← Répartition musculaire
-│   ├── symptomes.html           ← Suivi clinique
-│   └── seance.html              ← Détail d'une séance (?id=...)
-├── css/
-│   └── style.css                ← Styles custom + variables de thème
-└── js/
-    ├── utils.js                 ← Calculs, parsing, détections auto
-    ├── charts.js                ← Helpers Chart.js (dark/light mode)
-    └── main.js                  ← Initialisation de chaque page
-```
-
----
-
-## Évolutions prévues (architecture prête)
-
-Pour ajouter ces modules dans le futur, créer une nouvelle page dans `/pages/` et une fonction `initXxx(sessions)` dans `main.js` :
-
-- **Marche** — ajouter `walking_sessions` dans les données, page dédiée
-- **Sommeil** — ajouter `sleep_data`, graphiques durée + qualité
-- **Nutrition** — ajouter `nutrition` par jour, tracking macros
-- **Export PDF** — utiliser `window.print()` avec une CSS `@media print`
+*Projet personnel développé pour répondre à un besoin concret de suivi sportif, avec l'assistance de Claude Code.*
