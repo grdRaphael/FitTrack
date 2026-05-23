@@ -330,13 +330,11 @@ function renderDashboardCharts(sessions, existingCharts = {}) {
 
   destroyChart('chart-volume');
 
-  createLineChart('chart-volume', labels, [{
+  createBarChart('chart-volume', labels, [{
     label:           'Volume (kg)',
     data:            volumes,
-    borderColor:     '#3b82f6',
-    backgroundColor: rgba('#3b82f6', 0.08),
-    fill: true
-  }]);
+    backgroundColor: '#3b82f6'
+  }], { _tooltipLabel: 'Volume' });
   return {};
 }
 
@@ -983,38 +981,27 @@ function initSeance(sessions) {
       const volumes   = history.map(h => h.volume);
       const isCurrent = history.map(h => h.date === session.date);
 
-      const pointColors  = isCurrent.map(c => c ? '#f59e0b' : '#3b82f6');
-      const pointSizes   = isCurrent.map(c => c ? 7 : 3);
-      const pointBorders = isCurrent.map(c => c ? 2 : 1);
-
-      const miniOpts = {
-        plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx => labels[ctx[0].dataIndex] } } },
-        scales: {
-          x: { ticks: { font: { size: 9 }, maxRotation: 0, maxTicksLimit: 5 } },
-          y: { ticks: { font: { size: 9 }, maxTicksLimit: 4 } }
-        }
+      const miniScales = {
+        x: { ticks: { font: { size: 9 }, maxRotation: 0, maxTicksLimit: 5 } },
+        y: { ticks: { font: { size: 9 }, maxTicksLimit: 4 } }
       };
 
-      chartInits[exIndex] = () => {
-        createLineChart(`ex-weight-${exIndex}`, labels, [{
-          data:               weights,
-          borderColor:        '#3b82f6',
-          backgroundColor:    rgba('#3b82f6', 0.06),
-          fill:               true,
-          pointBackgroundColor: pointColors,
-          pointRadius:          pointSizes,
-          pointBorderWidth:     pointBorders
-        }], miniOpts);
+      // Barre de la séance courante mise en or, les autres en couleur normale
+      const weightColors = isCurrent.map(c => c ? rgba('#f59e0b', 0.9) : rgba('#3b82f6', 0.62));
+      const volumeColors = isCurrent.map(c => c ? rgba('#f59e0b', 0.9) : rgba('#10b981', 0.62));
 
-        createLineChart(`ex-volume-${exIndex}`, labels, [{
-          data:               volumes,
-          borderColor:        '#10b981',
-          backgroundColor:    rgba('#10b981', 0.06),
-          fill:               true,
-          pointBackgroundColor: isCurrent.map(c => c ? '#f59e0b' : '#10b981'),
-          pointRadius:          pointSizes,
-          pointBorderWidth:     pointBorders
-        }], miniOpts);
+      chartInits[exIndex] = () => {
+        createBarChart(`ex-weight-${exIndex}`, labels, [{
+          data:            weights,
+          backgroundColor: weightColors,
+          _baseColor:      '#3b82f6'
+        }], { _tooltipLabel: 'Charge max', scales: miniScales });
+
+        createBarChart(`ex-volume-${exIndex}`, labels, [{
+          data:            volumes,
+          backgroundColor: volumeColors,
+          _baseColor:      '#10b981'
+        }], { _tooltipLabel: 'Volume', scales: miniScales });
       };
     });
 
