@@ -906,7 +906,7 @@ function initSeance(sessions) {
       const hasHistory = history.length >= 2;
 
       return `
-        <div class="exercise-block fade-in">
+        <div class="exercise-block fade-in" data-ex-index="${exIndex}" style="animation-delay:${exIndex * 0.04}s">
           <div class="exercise-block-header" style="background:linear-gradient(135deg,${color}22 0%,${color}06 60%,transparent 100%)">
             <div style="width:36px;height:36px;border-radius:10px;background:${color}28;border:1px solid ${color}40;display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
@@ -918,61 +918,69 @@ function initSeance(sessions) {
               </div>
               <div class="text-xs" style="color:${color}bb;margin-top:1px">${formatCategory(ex.category)} · ${ex.sets.length} séries · max ${maxW || '?'} kg</div>
             </div>
-            <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:6px">
-              <button class="rename-ex-btn btn btn-ghost" data-ex-index="${exIndex}" title="Renommer cet exercice">✏️ Renommer</button>
-              <div>
+            <div style="flex-shrink:0;display:flex;align-items:center;gap:6px">
+              <div style="text-align:right">
                 <div class="text-sm font-semibold" style="color:${color}">${formatVolume(exVol)}</div>
                 <div class="text-xs text-muted">volume</div>
               </div>
+              <button class="rename-ex-btn btn btn-ghost" data-ex-index="${exIndex}" title="Renommer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <svg class="exercise-block-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
           </div>
-          <div class="exercise-block-body">
-            <div class="set-row" style="color:var(--text-muted);font-size:.75rem;font-weight:600;padding:4px 12px">
-              <div>#</div><div>Charge</div><div>Reps</div><div>Volume</div>
-            </div>
-            ${ex.sets.map(set => {
-              const setPRs = prs.filter(p => p.type === 'charge' && (p.exercise === ex.name) && maxW === set.weight_kg && !set.is_warmup);
-              return `
-                <div class="set-row ${set.is_warmup ? 'warmup' : ''} ${setPRs.length ? 'pr-set' : ''}">
-                  <div class="text-xs text-muted">${set.set_number}</div>
-                  <div class="text-sm ${set.is_warmup ? 'text-muted' : 'font-semibold'}">${set.weight_kg > 0 ? set.weight_kg + ' kg' : 'PDC'}</div>
-                  <div class="text-sm">${set.reps} reps</div>
-                  <div class="text-xs text-muted">${set.reps * set.weight_kg > 0 ? (set.reps * set.weight_kg).toLocaleString() + ' kg' : '—'}</div>
+          <div class="exercise-block-collapsible">
+            <div>
+              <div class="exercise-block-body">
+                <div class="set-row" style="color:var(--text-muted);font-size:.75rem;font-weight:600;padding:4px 12px">
+                  <div>#</div><div>Charge</div><div>Reps</div><div>Volume</div>
                 </div>
-              `;
-            }).join('')}
-            ${ex.note ? `<div class="text-xs text-muted" style="padding:8px 12px 0;font-style:italic">💬 ${ex.note}</div>` : ''}
+                ${ex.sets.map(set => {
+                  const setPRs = prs.filter(p => p.type === 'charge' && (p.exercise === ex.name) && maxW === set.weight_kg && !set.is_warmup);
+                  return `
+                    <div class="set-row ${set.is_warmup ? 'warmup' : ''} ${setPRs.length ? 'pr-set' : ''}">
+                      <div class="text-xs text-muted">${set.set_number}</div>
+                      <div class="text-sm ${set.is_warmup ? 'text-muted' : 'font-semibold'}">${set.weight_kg > 0 ? set.weight_kg + ' kg' : 'PDC'}</div>
+                      <div class="text-sm">${set.reps} reps</div>
+                      <div class="text-xs text-muted">${set.reps * set.weight_kg > 0 ? (set.reps * set.weight_kg).toLocaleString() + ' kg' : '—'}</div>
+                    </div>
+                  `;
+                }).join('')}
+                ${ex.note ? `<div class="text-xs text-muted" style="padding:8px 12px 0;font-style:italic">💬 ${ex.note}</div>` : ''}
+              </div>
+              ${hasHistory ? `
+                <div class="exercise-history-section" style="padding:0 16px 16px">
+                  <div style="font-size:.6875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
+                    Évolution depuis le début · ${history.length} séance${history.length > 1 ? 's' : ''}
+                  </div>
+                  <div class="exercise-charts-grid">
+                    <div>
+                      <div class="exercise-chart-label">Charge max (kg)</div>
+                      <div class="exercise-chart-wrap"><canvas id="ex-weight-${exIndex}"></canvas></div>
+                    </div>
+                    <div>
+                      <div class="exercise-chart-label">Volume par séance (kg)</div>
+                      <div class="exercise-chart-wrap"><canvas id="ex-volume-${exIndex}"></canvas></div>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
           </div>
-          ${hasHistory ? `
-            <div class="exercise-history-section" style="padding:0 16px 16px">
-              <div style="font-size:.6875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
-                Évolution depuis le début · ${history.length} séance${history.length > 1 ? 's' : ''}
-              </div>
-              <div class="exercise-charts-grid">
-                <div>
-                  <div class="exercise-chart-label">Charge max (kg)</div>
-                  <div class="exercise-chart-wrap"><canvas id="ex-weight-${exIndex}"></canvas></div>
-                </div>
-                <div>
-                  <div class="exercise-chart-label">Volume par séance (kg)</div>
-                  <div class="exercise-chart-wrap"><canvas id="ex-volume-${exIndex}"></canvas></div>
-                </div>
-              </div>
-            </div>
-          ` : ''}
         </div>
       `;
     }).join('');
 
-    // Créer les mini-graphiques après rendu DOM
+    // Lazy init des graphiques — créés au premier dépliement de la carte
+    const chartInits = {};
     session.exercises.forEach((ex, exIndex) => {
       const baseName = ex.name.replace(/\s*\(.*?\)\s*$/, '').trim();
       const history  = getExerciseHistory(allSessions, baseName);
       if (history.length < 2) return;
 
-      const labels  = history.map(h => formatDateShort(h.date));
-      const weights = history.map(h => h.maxWeight);
-      const volumes = history.map(h => h.volume);
+      const labels    = history.map(h => formatDateShort(h.date));
+      const weights   = history.map(h => h.maxWeight);
+      const volumes   = history.map(h => h.volume);
       const isCurrent = history.map(h => h.date === session.date);
 
       const pointColors  = isCurrent.map(c => c ? '#f59e0b' : '#3b82f6');
@@ -987,25 +995,43 @@ function initSeance(sessions) {
         }
       };
 
-      createLineChart(`ex-weight-${exIndex}`, labels, [{
-        data:               weights,
-        borderColor:        '#3b82f6',
-        backgroundColor:    rgba('#3b82f6', 0.06),
-        fill:               true,
-        pointBackgroundColor: pointColors,
-        pointRadius:          pointSizes,
-        pointBorderWidth:     pointBorders
-      }], miniOpts);
+      chartInits[exIndex] = () => {
+        createLineChart(`ex-weight-${exIndex}`, labels, [{
+          data:               weights,
+          borderColor:        '#3b82f6',
+          backgroundColor:    rgba('#3b82f6', 0.06),
+          fill:               true,
+          pointBackgroundColor: pointColors,
+          pointRadius:          pointSizes,
+          pointBorderWidth:     pointBorders
+        }], miniOpts);
 
-      createLineChart(`ex-volume-${exIndex}`, labels, [{
-        data:               volumes,
-        borderColor:        '#10b981',
-        backgroundColor:    rgba('#10b981', 0.06),
-        fill:               true,
-        pointBackgroundColor: isCurrent.map(c => c ? '#f59e0b' : '#10b981'),
-        pointRadius:          pointSizes,
-        pointBorderWidth:     pointBorders
-      }], miniOpts);
+        createLineChart(`ex-volume-${exIndex}`, labels, [{
+          data:               volumes,
+          borderColor:        '#10b981',
+          backgroundColor:    rgba('#10b981', 0.06),
+          fill:               true,
+          pointBackgroundColor: isCurrent.map(c => c ? '#f59e0b' : '#10b981'),
+          pointRadius:          pointSizes,
+          pointBorderWidth:     pointBorders
+        }], miniOpts);
+      };
+    });
+
+    // ── Accordéon — dépliement/repliement des cartes exercice ──────────────
+    exercicesEl.addEventListener('click', e => {
+      if (e.target.closest('.rename-ex-btn')) return;
+      const header = e.target.closest('.exercise-block-header');
+      if (!header) return;
+      const block   = header.closest('.exercise-block');
+      const wasOpen = block.classList.contains('exercise-block--open');
+      block.classList.toggle('exercise-block--open');
+      if (!wasOpen) {
+        const exIdx = parseInt(block.dataset.exIndex);
+        if (chartInits[exIdx]) {
+          setTimeout(() => { chartInits[exIdx](); delete chartInits[exIdx]; }, 330);
+        }
+      }
     });
 
     // ── Rename feature ───────────────────────────────────────────────────────
