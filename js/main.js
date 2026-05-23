@@ -16,36 +16,72 @@ function toggleTheme() {
 
 // ── Bootstrap ───────────────────────────────────────────────────────────────
 
+const FT_CACHE_KEY = 'ft-sessions-cache';
+
 async function _bootApp(email) {
   const loadingEl = document.getElementById('loading');
   const appEl     = document.getElementById('app');
-
-  loadingEl?.classList.remove('hidden');
-  if (loadingEl && !loadingEl.querySelector('.spinner')) {
-    loadingEl.innerHTML = `<div style="text-align:center"><div class="spinner" style="margin:0 auto 16px"></div><p class="text-secondary text-sm">Chargement...</p></div>`;
-  }
-  appEl?.classList.add('hidden');
+  const page      = document.body.dataset.page;
 
   _injectLogoutBtn(email);
 
-  const sessions = await loadData();
-  sessions.sort((a, b) => b.date.localeCompare(a.date));
-  window.sessions = sessions;
+  // ── 1. Render instantly from cache ────────────────────────────────────────
+  let cachedSessions = null;
+  try {
+    const raw = localStorage.getItem(FT_CACHE_KEY);
+    if (raw) cachedSessions = JSON.parse(raw);
+  } catch (_) {}
 
-  loadingEl?.classList.add('hidden');
-  appEl?.classList.remove('hidden');
+  if (cachedSessions?.length) {
+    cachedSessions.sort((a, b) => b.date.localeCompare(a.date));
+    window.sessions = cachedSessions;
+    loadingEl?.classList.add('hidden');
+    appEl?.classList.remove('hidden');
+    if (!document.querySelector('.bottom-nav')) renderBottomNav(page);
+    _initPage(page, cachedSessions);
+  } else {
+    loadingEl?.classList.remove('hidden');
+    if (loadingEl && !loadingEl.querySelector('.spinner')) {
+      loadingEl.innerHTML = `<div style="text-align:center"><div class="spinner" style="margin:0 auto 16px"></div><p class="text-secondary text-sm">Chargement...</p></div>`;
+    }
+    appEl?.classList.add('hidden');
+  }
 
-  const page = document.body.dataset.page;
-  if (!document.querySelector('.bottom-nav')) renderBottomNav(page);
+  // ── 2. Fetch fresh data in background ─────────────────────────────────────
+  try {
+    const fresh = await loadData();
+    fresh.sort((a, b) => b.date.localeCompare(a.date));
+    try { localStorage.setItem(FT_CACHE_KEY, JSON.stringify(fresh)); } catch (_) {}
+    window.sessions = fresh;
 
-  if (page === 'accueil')            initAccueil(sessions);
-  else if (page === 'exercices')     initExercices(sessions);
-  else if (page === 'groupes')       initGroupes(sessions);
-  else if (page === 'symptomes')     initSymptomes(sessions);
-  else if (page === 'seance')        initSeance(sessions);
-  else if (page === 'journal')       initJournal(sessions);
-  else if (page === 'calendrier')    initCalendrier(sessions);
-  else if (page === 'importer')      initImporter();
+    if (!cachedSessions?.length) {
+      loadingEl?.classList.add('hidden');
+      appEl?.classList.remove('hidden');
+      if (!document.querySelector('.bottom-nav')) renderBottomNav(page);
+      _initPage(page, fresh);
+    } else {
+      const changed = fresh.length !== cachedSessions.length ||
+        fresh[0]?.id !== cachedSessions[0]?.id ||
+        JSON.stringify(fresh[0]) !== JSON.stringify(cachedSessions[0]);
+      if (changed && typeof window._ftRerender === 'function') {
+        window._ftRerender(fresh);
+      }
+    }
+  } catch (e) {
+    if (!cachedSessions?.length) throw e;
+    // Cache shown — fail silently
+  }
+}
+
+function _initPage(page, sessions) {
+  if (page === 'accueil')         initAccueil(sessions);
+  else if (page === 'exercices')  initExercices(sessions);
+  else if (page === 'groupes')    initGroupes(sessions);
+  else if (page === 'symptomes')  initSymptomes(sessions);
+  else if (page === 'seance')     initSeance(sessions);
+  else if (page === 'journal')    initJournal(sessions);
+  else if (page === 'calendrier') initCalendrier(sessions);
+  else if (page === 'importer')   initImporter();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -258,6 +294,7 @@ function initAccueil(sessions) {
     });
   });
 
+  window._ftRerender = newSessions => { sessions = newSessions; render(currentDays); };
   render(currentDays);
 }
 
@@ -444,9 +481,9 @@ function renderRecentSessions(sessions) {
 // ════════════════════════════════════════════════════════════════════════════
 
 function initExercices(sessions) {
-  const allExercises = getAllExercises(sessions);
-  const newExercises = new Set(detectNewExercises(sessions, 14).map(e => e.name));
-  const prs          = calculateAllPRs(sessions);
+  let allExercises = getAllExercises(sessions);
+  let newExercises = new Set(detectNewExercises(sessions, 14).map(e => e.name));
+  let prs          = calculateAllPRs(sessions);
   let activeCategory = 'tous';
 
   function render(query = '') {
@@ -506,6 +543,13 @@ function initExercices(sessions) {
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+  window._ftRerender = newSessions => {
+    sessions     = newSessions;
+    allExercises = getAllExercises(sessions);
+    newExercises = new Set(detectNewExercises(sessions, 14).map(e => e.name));
+    prs          = calculateAllPRs(sessions);
+    render(document.getElementById('search-input')?.value || '');
+  };
   render();
 }
 
@@ -1230,6 +1274,7 @@ function initJournal(sessions) {
     importedCount.textContent = n > 0 ? `${n} séance${n > 1 ? 's' : ''}` : '';
   }
 
+  window._ftRerender = newSessions => { sessions = newSessions; render(); };
   render();
 }
 
@@ -1446,6 +1491,15 @@ function initCalendrier(sessions) {
     resetView(); renderCalendar();
   });
 
+  window._ftRerender = newSessions => {
+    sessions = newSessions;
+    Object.keys(sessionsByDate).forEach(k => delete sessionsByDate[k]);
+    sessions.forEach(s => {
+      if (!sessionsByDate[s.date]) sessionsByDate[s.date] = [];
+      sessionsByDate[s.date].push(s);
+    });
+    renderCalendar();
+  };
   renderCalendar();
 }
 

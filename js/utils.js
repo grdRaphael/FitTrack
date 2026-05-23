@@ -83,18 +83,22 @@ async function upsertSession(session) {
     updated_at: new Date().toISOString()
   });
   if (error) throw new Error('Erreur sauvegarde : ' + error.message);
-  // Mise à jour du cache mémoire
+  // Mise à jour du cache mémoire + localStorage
   if (window.sessions) {
     const idx = window.sessions.findIndex(s => s.id === session.id);
     if (idx >= 0) window.sessions[idx] = session;
     else window.sessions.push(session);
+    try { localStorage.setItem('ft-sessions-cache', JSON.stringify(window.sessions)); } catch (_) {}
   }
 }
 
 async function deleteStoredSession(id) {
   const { error } = await _sb.from('sessions').delete().eq('id', id);
   if (error) throw new Error('Erreur suppression : ' + error.message);
-  if (window.sessions) window.sessions = window.sessions.filter(s => s.id !== id);
+  if (window.sessions) {
+    window.sessions = window.sessions.filter(s => s.id !== id);
+    try { localStorage.setItem('ft-sessions-cache', JSON.stringify(window.sessions)); } catch (_) {}
+  }
 }
 
 async function clearAllStoredSessions() {
@@ -102,6 +106,7 @@ async function clearAllStoredSessions() {
   const { error } = await _sb.from('sessions').delete().eq('user_id', user.id);
   if (error) throw new Error('Erreur suppression : ' + error.message);
   window.sessions = [];
+  try { localStorage.removeItem('ft-sessions-cache'); } catch (_) {}
 }
 
 // ── Chargement des données ──────────────────────────────────────────────────
