@@ -83,6 +83,22 @@
     }
     input:checked + .toggle-track { background: var(--accent); }
     input:checked + .toggle-track::after { transform: translateX(22px); }
+    /* Export button */
+    .btn-export {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .8125rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      padding: 7px 14px;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity .15s;
+    }
+    .btn-export:disabled { opacity: .5; cursor: default; }
     /* Danger button */
     .btn-danger {
       background: transparent;
@@ -178,6 +194,20 @@
       </div>
     </div>
 
+    <!-- Données -->
+    <div class="settings-section">
+      <div class="settings-label">Données</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Exporter mes séances</div>
+            <div class="settings-row-sub">Télécharge toutes tes séances en JSON</div>
+          </div>
+          <button class="btn-export" id="export-btn">↓ Export</button>
+        </div>
+      </div>
+    </div>
+
     <!-- App -->
     <div class="settings-section">
       <div class="settings-label">Application</div>
@@ -187,7 +217,7 @@
           <span class="text-muted text-sm">1.0.0</span>
         </div>
         <div class="settings-row">
-          <div class="settings-row-label">Données</div>
+          <div class="settings-row-label">Stockage</div>
           <span class="text-muted text-sm">Supabase</span>
         </div>
       </div>
@@ -257,6 +287,35 @@
         const isDark = toggle.checked;
         document.documentElement.classList.toggle('light-mode', !isDark);
         localStorage.setItem('ft-theme', isDark ? 'dark' : 'light');
+      });
+
+      // Export
+      document.getElementById('export-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('export-btn');
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const { data, error } = await _sb
+            .from('sessions')
+            .select('data')
+            .order('date', { ascending: true });
+          if (error) throw error;
+          const sessions = data.map(row => row.data);
+          const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: 'application/json' });
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          const date = new Date().toISOString().slice(0, 10);
+          a.href     = url;
+          a.download = `fittrack-export-${date}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          btn.textContent = '✓ Téléchargé';
+          setTimeout(() => { btn.textContent = '↓ Export'; btn.disabled = false; }, 2500);
+        } catch (e) {
+          btn.textContent = 'Erreur';
+          btn.disabled = false;
+          console.error(e);
+        }
       });
 
       // Logout
